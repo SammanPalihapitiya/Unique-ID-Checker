@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Observatory Data Comparison Tool</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Observatory Data Comparison Tool</h1>
+        
+        <div id="error" class="error hidden"></div>
+        
+        <div class="file-upload">
+            <label>Unique Property IDs:</label>
+            <input type="file" id="masterCsv" accept=".csv" required>
+        </div>
+        
+        <div class="file-upload">
+            <label>Monthly Analytics Data:</label>
+            <input type="file" id="monthlyCsv" accept=".csv" required>
+        </div>
+        
+        <button id="compareBtn">Compare IDs</button>
+        
+        <div id="results" class="results hidden">
+            <h2>Comparison Results</h2>
+            
+            <div class="result-section">
+                <h3>Unique Property IDs</h3>
+                <ul id="monthlyUniqueIds"></ul>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
+
