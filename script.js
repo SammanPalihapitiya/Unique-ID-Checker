@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const masterCsvInput = document.getElementById('masterCsv');
     const monthlyCsvInput = document.getElementById('monthlyCsv');
-    const masterCsvFileName = document.getElementById('masterCsvFileName');
-    const monthlyCsvFileName = document.getElementById('monthlyCsvFileName');
 
 
     const compareBtn = document.getElementById('compareBtn');
@@ -12,17 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const uniqueRowsList = document.getElementById('uniqueRowsList');
     const defaultCsvNotice = document.getElementById('defaultNotice');
 
-    function updateFileName(input, fileNameElement) {
-        input.addEventListener('change', (event) => {
-            const fileName = event.target.files.length 
-                ? event.target.files[0].name 
-                : 'No file chosen';
-            fileNameElement.textContent = fileName;
-        });
-    }
-
-    updateFileName(masterCsvInput, masterCsvFileName);
-    updateFileName(monthlyCsvInput, monthlyCsvFileName);
     
     // Helper function to clear previous results
     function clearResults() {
@@ -31,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsDiv.classList.add('hidden');
         uniqueRowsList.innerHTML = '';
         defaultCsvNotice.classList.add('hidden');
-
     }
 
     // Helper function to show error
@@ -68,7 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         let masterCsvText;
-        let usingDefault = false;
+        let usingDefault;
+
         if (masterCsvInput.files.length) {
             //user has uploaded master csv
             masterCsvText = await masterCsvInput.files[0].text();
