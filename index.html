@@ -8,27 +8,29 @@
 <body>
     <div class="container">
         <h1>Observatory Data Comparison Tool</h1>
+        <h3>Compare existing property IDs against monthly analytics reports.</h3>
         
         <div id="error" class="error hidden"></div>
+        <div id="defaultNotice" class="hidden notice"></div>
         
         <div class="file-upload">
             <label>Unique Property IDs:</label>
-            <input type="file" id="masterCsv" accept=".csv" required>
+            <input type="file" id="masterCsv" accept=".csv" optional>
         </div>
         
         <div class="file-upload">
             <label>Monthly Analytics Data:</label>
             <input type="file" id="monthlyCsv" accept=".csv" required>
         </div>
-        
-        <button id="compareBtn">Compare IDs</button>
+    
+
+        <button id="compareBtn">Compare</button>
         
         <div id="results" class="results hidden">
             <h2>Comparison Results</h2>
             
             <div class="result-section">
-                <h3>Unique Property IDs</h3>
-                <ul id="monthlyUniqueIds"></ul>
+                <ul id="uniqueRowsList"></ul>
             </div>
         </div>
     </div>

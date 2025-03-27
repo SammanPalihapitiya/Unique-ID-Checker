@@ -1,17 +1,23 @@
 document.addEventListener('DOMContentLoaded', () => {
     const masterCsvInput = document.getElementById('masterCsv');
     const monthlyCsvInput = document.getElementById('monthlyCsv');
+
+
     const compareBtn = document.getElementById('compareBtn');
     const errorDiv = document.getElementById('error');
     const resultsDiv = document.getElementById('results');
-    const monthlyUniqueIdsList = document.getElementById('monthlyUniqueIds');
 
+    const uniqueRowsList = document.getElementById('uniqueRowsList');
+    const defaultCsvNotice = document.getElementById('defaultNotice');
+
+    
     // Helper function to clear previous results
     function clearResults() {
         errorDiv.textContent = '';
         errorDiv.classList.add('hidden');
         resultsDiv.classList.add('hidden');
-        monthlyUniqueIdsList.innerHTML = '';
+        uniqueRowsList.innerHTML = '';
+        defaultCsvNotice.classList.add('hidden');
     }
 
     // Helper function to show error
@@ -21,78 +27,111 @@ document.addEventListener('DOMContentLoaded', () => {
         errorDiv.classList.remove('hidden');
     }
 
+    // function to fetch default master CSV from dataset directory
+    async function fetchDefault() {
+        try {
+            const response = await fetch('./dataset/masterDataset.csv');
+            if (!response.ok) {
+                throw new Error('Unable to fetch default master CSV');
+            }
+            return await response.text();
+        } catch (error) {
+            showError('Error loading default master CSV: ' + error.message);
+            return null;
+        }
+    }
+    
+
     // Compare Property IDs
-    compareBtn.addEventListener('click', () => {
+    compareBtn.addEventListener('click', async () => {
         // Clear previous results
         clearResults();
 
-        // Validate file inputs
-        if (!masterCsvInput.files.length || !monthlyCsvInput.files.length) {
-            showError('Please upload both CSV files');
+        // validate monthly data
+        if (!monthlyCsvInput.files.length) {
+            showError('Please upload the monthly analytics.');
             return;
         }
 
-        // Read Unique Property IDs CSV
-        Papa.parse(masterCsvInput.files[0], {
+        let masterCsvText;
+        let usingDefault;
+
+        if (masterCsvInput.files.length) {
+            //user has uploaded master csv
+            masterCsvText = await masterCsvInput.files[0].text();
+        } else {
+            // use default
+            masterCsvText = await fetchDefault();
+            if (!masterCsvText) return;
+            usingDefault = true;
+        }
+
+        // parse master csv
+        const masterResults = Papa.parse(masterCsvText, { header: true });
+
+
+        // parse monthly CSV
+        Papa.parse(monthlyCsvInput.files[0], {
             header: true,
-            complete: function(masterResults) {
-                // Read Monthly Analytics Data
-                Papa.parse(monthlyCsvInput.files[0], {
-                    header: true,
-                    complete: function(monthlyResults) {
+            complete: function(monthlyResults) {
 
-                        // Validate 'Property ID' column
-                        if (!masterResults.meta.fields.includes('Property ID') || 
-                            !monthlyResults.meta.fields.includes('ID')) {
-                            showError("Both CSVs must have a 'Project ID or ID' column");
-                            return;
-                        }
+                const masterCol = "Property ID";
+                const monthlyCol = "ID"
 
-                        // Extract Property IDs
-                        const masterIds = new Set(masterResults.data.map(row => row['Project ID']));   
-                        const uniqueRows = monthlyResults.data.filter(row => !masterIds.has(row['ID']));
+                // Validate 'Property ID' column
+                if (!masterResults.meta.fields.includes(masterCol) || 
+                    !monthlyResults.meta.fields.includes(monthlyCol)) {
+                    showError(`The Master CSV must have '${masterCol}', and Monthly CSV must have '${monthlyCol}'`);
+                    return;
+                }
 
-                        // Display results
-                        if (uniqueRows.length > 0) {
-                            resultsDiv.classList.remove('hidden');
+                // Extract Property IDs
+                const masterIds = new Set(masterResults.data.map(row => row['Property ID']));   
+                const uniqueRows = monthlyResults.data.filter(row => !masterIds.has(row['ID']));
 
-                            // Create table for unique rows
-                            const table = document.createElement('table');
-                            table.className = 'results-table';
+                if (usingDefault) {
+                    defaultCsvNotice.classList.remove('hidden');
+                    defaultCsvNotice.textContent = 'Opted to default Observatory dataset. Data may be outdated.'
+                }
 
-                            // Create header row
-                            const headerRow = document.createElement('tr');
-                            Object.keys(uniqueRows[0]).forEach(header => {
-                                const th = document.createElement('th');
-                                th.textContent = header;
-                                headerRow.appendChild(th);
-                            });
-                            table.appendChild(headerRow);
+                // Display results
+                if (uniqueRows.length > 0) {
+                    resultsDiv.classList.remove('hidden');
 
-                            // Add data rows
-                            uniqueRows.forEach(row => {
-                                const tr = document.createElement('tr');
-                                Object.values(row).forEach(value => {
-                                    const td = document.createElement('td');
-                                    td.textContent = value;
-                                    tr.appendChild(td);
-                                });
-                                table.appendChild(tr);
-                            });
+                    // Create table for unique rows
+                    const table = document.createElement('table');
+                    table.className = 'results-table';
 
-                            // Clear previous content and add new table
-                            monthlyUniqueIdsList.innerHTML = '';
-                            const li = document.createElement('li');
-                            li.appendChild(table);
-                            monthlyUniqueIdsList.appendChild(li);
+                    // Create header row
+                    const headerRow = document.createElement('tr');
+                    const headers = Object.keys(uniqueRows[0]); // Extract column names
+                    headers.forEach(header => {
+                        const th = document.createElement('th');
+                        th.textContent = header;
+                        headerRow.appendChild(th);
+                    });
+                    table.appendChild(headerRow);
 
-                            // Log number of unique rows
-                            console.log(`Found ${uniqueRows.length} unique rows`);
-                        } else {
-                            showError('No unique rows found');
-                        }
-                    }
-                });
+                    // Add data rows
+                    uniqueRows.forEach(row => {
+                        const tr = document.createElement('tr');
+                        headers.forEach(header => {
+                            const td = document.createElement('td');
+                            td.textContent = row[header] || ''; // Preserve structure
+                            tr.appendChild(td);
+                        });
+                        table.appendChild(tr);
+                    });
+
+                    // Clear previous content and add new table
+                    uniqueRowsList.innerHTML = '';
+                    uniqueRowsList.appendChild(table);
+
+                    // Log number of unique rows
+                    console.log(`Found ${uniqueRows.length} unique rows`);
+                } else {
+                    showError('No unique rows found');
+                }
             }
         });
     });
