@@ -69,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // parse master csv
         const masterResults = Papa.parse(masterCsvText, { header: true });
 
-
         // parse monthly CSV
         Papa.parse(monthlyCsvInput.files[0], {
             header: true,
@@ -78,23 +77,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const masterCol = "Property ID";
                 const monthlyCol = "ID"
 
-                // Validate 'Property ID' column
+                // Validate 'Property ID' column in master csv and 'ID' in monthly csv
                 if (!masterResults.meta.fields.includes(masterCol) || 
                     !monthlyResults.meta.fields.includes(monthlyCol)) {
                     showError(`The Master CSV must have '${masterCol}', and Monthly CSV must have '${monthlyCol}'`);
                     return;
                 }
 
-                // Extract Property IDs
-                const masterIds = new Set(masterResults.data.map(row => row['Property ID']));   
+                // creates a new array of only Property IDs from each row in masterResults.data
+                // so masterIds is a set of all unique property IDs from the master CSV
+                const masterIds = new Set(masterResults.data.map(row => row['Property ID']));  
+                
+                // uses .filter() to create an array with only rows that pass the condition
+                // condition: for each row in monthly CSV, check if ID is NOT in masterIds
                 const uniqueRows = monthlyResults.data.filter(row => !masterIds.has(row['ID']));
-
+                
+                // show notice when we default to our own masterDataset of unique property IDs
                 if (usingDefault) {
                     defaultCsvNotice.classList.remove('hidden');
                     defaultCsvNotice.textContent = 'Opted to default Observatory dataset. Data may be outdated.'
                 }
 
-                // Display results
+                // display results - note this section was largely AI generated.
                 if (uniqueRows.length > 0) {
                     resultsDiv.classList.remove('hidden');
 

@@ -20,6 +20,12 @@ h3 {
     padding-bottom: 5%;
 }
 
+h5 {
+    text-align: center;
+    color: #595656;
+}
+
+
 .container {
     background-color: #e2e1e1;
     padding: 20px;
@@ -28,6 +34,8 @@ h3 {
 
 .file-upload {
     margin-bottom: 15px;
+    display: flex;
+    gap: 3%;
 }
 
 button {
