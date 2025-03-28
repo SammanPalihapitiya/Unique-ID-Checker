@@ -131,10 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     uniqueRowsList.innerHTML = '';
                     uniqueRowsList.appendChild(table);
 
-                    // Log number of unique rows
-                    console.log(`Found ${uniqueRows.length} unique rows`);
                 } else {
-                    showError('No unique rows found');
+                    showError('No unique property IDs found');
                 }
             }
         });
